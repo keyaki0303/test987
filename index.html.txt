@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約フォーム</title>
+    <script src="https://static.line-scdn.net/liff/2.1/sdk.js"></script>
+</head>
+<body>
+    <h1>予約フォーム</h1>
+    <form id="reserveForm">
+        <label>お名前:</label>
+        <input type="text" id="name" required><br>
+        <label>希望日:</label>
+        <input type="date" id="date" required><br>
+        <label>希望時間:</label>
+        <input type="time" id="time" required><br>
+        <label>電話番号:</label>
+        <input type="tel" id="phone" required><br>
+        <button type="submit">予約する</button>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            liff.init({ liffId: "2006838300-B0Q24d5r" }) // LIFF IDを設定
+                .then(() => {
+                    return liff.getProfile();
+                })
+                .then(profile => {
+                    document.getElementById("name").value = profile.displayName;
+                })
+                .catch(err => console.log("LIFFエラー:", err));
+        });
+
+        document.getElementById("reserveForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let reservationData = {
+                name: document.getElementById("name").value,
+                date: document.getElementById("date").value,
+                time: document.getElementById("time").value,
+                phone: document.getElementById("phone").value,
+                userId: liff.getDecodedIDToken().sub
+            };
+
+            fetch("https://script.google.com/macros/s/AKfycbzLyNwJ9kseNhCAt2agTM-lo2inWWYzFmkKx7Lr2hwKID3Vs7BhvqMsGMxDyNBTis0/exec", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(reservationData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("予約完了！");
+                liff.sendMessages([{ type: "text", text: "予約を受け付けました！" }])
+                    .then(() => liff.closeWindow());
+            })
+            .catch(error => console.error("エラー:", error));
+        });
+    </script>
+</body>
+</html>
+document.addEventListener("DOMContentLoaded", function() {
+    liff.init({ liffId: "YOUR_LIFF_ID" })
+        .then(() => {
+            if (!liff.isLoggedIn()) {
+                liff.login(); // 未ログインならLINEログインを強制
+            }
+            return liff.getProfile();
+        })
+        .then(profile => {
+            document.getElementById("name").value = profile.displayName;
+        })
+        .catch(err => console.log("LIFFエラー:", err));
+});
